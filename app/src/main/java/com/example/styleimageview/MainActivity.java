@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     public void initOptions() {
         options = new ArrayList<>();
         optionTexts = new ArrayList<>();
-        options.add(Styler.Mode.GREY);
+        options.add(Styler.Mode.GREY_SCALE);
         optionTexts.add("Grey Scale");
         options.add(Styler.Mode.INVERT);
         optionTexts.add("Invert");

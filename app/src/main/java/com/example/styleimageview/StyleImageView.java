@@ -2,6 +2,7 @@ package com.example.styleimageview;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -9,24 +10,98 @@ import android.widget.ImageView;
  * Created by chengdazhi on 8/10/16.
  */
 public class StyleImageView extends ImageView {
-    private float[] oldMatrix = null;
-    private ValueAnimator animator;
+    private Styler styler;
 
     public StyleImageView(Context context) {
         super(context);
+        init();
     }
 
     public StyleImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public StyleImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.StyleImageView, defStyleAttr, 0);
+        int style = typedArray.getInt(R.styleable.StyleImageView_style, -1);
+        int brightness = typedArray.getInt(R.styleable.StyleImageView_brightness, 0);
+        float contrast = typedArray.getFloat(R.styleable.StyleImageView_contrast, 1);
+        if (brightness > 255) {
+            throw new IllegalArgumentException("brightness can't be bigger than 255 in XML resources");
+        } else if (brightness < -255) {
+            throw new IllegalArgumentException("brightness can't be smaller than -255 in XML resources");
+        }
+        if (contrast < 0) {
+            throw new IllegalArgumentException("contrast can't be smaller than 0 in XML resources");
+        }
+    }
+
+    private void init() {
+        styler = new Styler.Builder(this, Styler.Mode.NONE).build();
+    }
+
+
+    public boolean isEnableAnimation() {
+        return styler.isEnableAnimation();
+    }
+
+    public long getAnimationDuration() {
+        return styler.getAnimationDuration();
+    }
+
+    public StyleImageView turnOnAnimate(long animationDuration) {
+        styler.turnOnAnimate(animationDuration);
+        return this;
+    }
+
+    public StyleImageView turnOffAnimate() {
+        styler.turnOffAnimate();
+        return this;
+    }
+
+    public int getBrightness() {
+        return styler.getBrightness();
+    }
+
+    public StyleImageView setBrightness(int brightness) {
+        styler.setBrightness(brightness);
+        return this;
+    }
+
+    public float getContrast() {
+        return styler.getContrast();
+    }
+
+    public StyleImageView setContrast(float contrast) {
+        styler.setContrast(contrast);
+        return this;
+    }
+
+    public float getSaturation() {
+        return styler.getSaturation();
+    }
+
+    public StyleImageView setSaturation(float saturation) {
+        styler.setSaturation(saturation);
+        return this;
+    }
+
+    public int getMode() {
+        return styler.getMode();
+    }
+
+    public StyleImageView setMode(int mode) {
+        styler.setMode(mode);
+        return this;
     }
 /*
     public void setStyle(int mode) {
         switch (mode) {
-            case Styler.Mode.GREY:
+            case Styler.Mode.GREY_SCALE:
             case Styler.Mode.INVERT:
             case Styler.Mode.RGB_TO_BGR:
             case Styler.Mode.SEPIA:
@@ -45,7 +120,7 @@ public class StyleImageView extends ImageView {
 
     public void setStyle(int mode, long animationDuration) {
         switch (mode) {
-            case Styler.Mode.GREY:
+            case Styler.Mode.GREY_SCALE:
             case Styler.Mode.INVERT:
             case Styler.Mode.RGB_TO_BGR:
             case Styler.Mode.SEPIA:

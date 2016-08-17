@@ -263,7 +263,7 @@ public class Styler {
     public static class Mode {
         public static final int NONE = -1;
         public static final int SATURATION = 0;
-        public static final int GREY = 1;
+        public static final int GREY_SCALE = 1;
         public static final int INVERT = 2;
         public static final int RGB_TO_BGR = 3;
         public static final int SEPIA = 4;
@@ -280,7 +280,7 @@ public class Styler {
             case Mode.NONE:
                 targetMatrix = StyleMatrixs.COMMON.clone();
                 break;
-            case Mode.GREY:
+            case Mode.GREY_SCALE:
                 targetMatrix = StyleMatrixs.GREY_SCALE.clone();
                 break;
             case Mode.INVERT:
