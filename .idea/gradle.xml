@@ -3,18 +3,23 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="C:\Program Files\Android\Android Studio\gradle\gradle-2.10" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/style_image_view_test" />
+            <option value="$PROJECT_DIR$/styleimageview" />
+            <option value="$PROJECT_DIR$/styler_test" />
           </set>
         </option>
         <option name="myModules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/style_image_view_test" />
+            <option value="$PROJECT_DIR$/styleimageview" />
+            <option value="$PROJECT_DIR$/styler_test" />
           </set>
         </option>
       </GradleProjectSettings>

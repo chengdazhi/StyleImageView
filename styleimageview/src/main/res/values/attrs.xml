@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="StyleImageView">
+        <attr name="style">
+            <enum name="none" value="-1"/>
+            <enum name="saturation" value="0"/>
+            <enum name="grey_scale" value="1"/>
+            <enum name="invert" value="2"/>
+            <enum name="rgb_to_bgr" value="3"/>
+            <enum name="sepia" value="4"/>
+            <enum name="bright" value="5"/>
+            <enum name="black_and_white" value="6"/>
+            <enum name="vintage_pinhole" value="7"/>
+            <enum name="kodachrome" value="8"/>
+            <enum name="technicolor" value="9"/>
+        </attr>
+        <attr name="brightness" format="integer"/>
+        <attr name="contrast" format="float"/>
+        <attr name="saturation" format="float"/>
+    </declare-styleable>
+
+</resources>
