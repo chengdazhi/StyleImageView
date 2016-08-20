@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText animationDurationEditText;
     private SeekBar brightnessBar;
     private SeekBar contrastBar;
-    public static final String TAG = "style_image_view";
+    private SeekBar saturationBar;
     private Styler styler;
 
     @Override
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         initOptions();
         list.setAdapter(new ListAdapter());
 
-        styler = new Styler.Builder(image, Styler.Mode.NONE).turnOnAnimate(500).build();
+        styler = new Styler.Builder(image, Styler.Mode.NONE).enableAnimation(500).build();
 
         shouldAnimateCheckBox = (CheckBox) findViewById(R.id.animation_checkbox);
         animationDurationEditText = (EditText) findViewById(R.id.duration_edittext);
@@ -60,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
                     animationDurationEditText.setTextColor(Color.BLACK);
                 }
                 if (b) {
-                    styler.turnOnAnimate(Long.parseLong(animationDurationEditText.getText().toString()));
+                    styler.enableAnimation(Long.parseLong(animationDurationEditText.getText().toString()));
                 } else {
-                    styler.turnOffAnimate();
+                    styler.disableAnimation();
                 }
             }
         });
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
-                    styler.turnOnAnimate(Long.parseLong(charSequence.toString()));
+                    styler.enableAnimation(Long.parseLong(charSequence.toString()));
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                 }
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         options.add(Styler.Mode.SEPIA);
         optionTexts.add("Sepia");
         options.add(Styler.Mode.BLACK_AND_WHITE);
-        optionTexts.add("Black&White");
+        optionTexts.add("Black & White");
         options.add(Styler.Mode.BRIGHT);
         optionTexts.add("Bright");
         options.add(Styler.Mode.VINTAGE_PINHOLE);
@@ -153,27 +153,38 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(final int i, View view, ViewGroup viewGroup) {
-            View result = getLayoutInflater().inflate(R.layout.option_item, null);
+            final View result = getLayoutInflater().inflate(R.layout.option_item, null);
+            if (i < options.size() && styler.getMode() == options.get(i) ||
+                    i >= options.size() && styler.getMode() == Styler.Mode.NONE) {
+                result.setBackgroundColor(Color.LTGRAY);
+                lastActiveView = result;
+            }
             TextView title = (TextView) result.findViewById(R.id.text);
-            final SeekBar saturationBar = (SeekBar) result.findViewById(R.id.seekbar_saturation);
-            saturationBar.setVisibility(View.GONE);
             if (i >= options.size()) {
                 title.setText("Clear");
             } else {
                 title.setText(optionTexts.get(i));
                 if (options.get(i) == Styler.Mode.SATURATION) {
+                    saturationBar = (SeekBar) result.findViewById(R.id.seekbar_saturation);
                     saturationBar.setVisibility(View.VISIBLE);
-                    SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
+                    saturationBar.setProgress((int) (styler.getSaturation() * 100));
+                    saturationBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                            styler.setSaturation(saturationBar.getProgress() / 100F).updateStyle();
+                            styler.setSaturation(i / 100F).updateStyle();
+                            if (lastActiveView != result) {
+                                result.setBackgroundColor(Color.LTGRAY);
+                                if (lastActiveView != null) {
+                                    lastActiveView.setBackgroundColor(Color.WHITE);
+                                }
+                            }
+                            lastActiveView = result;
                         }
                         @Override
                         public void onStartTrackingTouch(SeekBar seekBar) {}
                         @Override
                         public void onStopTrackingTouch(SeekBar seekBar) {}
-                    };
-                    saturationBar.setOnSeekBarChangeListener(listener);
+                    });
                 }
             }
             result.setOnClickListener(new View.OnClickListener() {
@@ -185,11 +196,10 @@ public class MainActivity extends AppCompatActivity {
                     view.setBackgroundColor(Color.LTGRAY);
                     if (i >= options.size()) {
                         styler.clearStyle();
-                    } else if (options.get(i) != Styler.Mode.SATURATION) {
-                        if (i >= options.size()) {
-                            styler.clearStyle();
-                        } else {
-                            styler.setMode(options.get(i)).updateStyle();
+                    } else {
+                        styler.setMode(options.get(i)).updateStyle();
+                        if (saturationBar != null) {
+                            saturationBar.setProgress(100);
                         }
                     }
                     lastActiveView = view;

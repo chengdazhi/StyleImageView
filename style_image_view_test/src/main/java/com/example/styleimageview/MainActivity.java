@@ -11,7 +11,6 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -23,15 +22,17 @@ import it.chengdazhi.styleimageview.StyleImageView;
 import it.chengdazhi.styleimageview.Styler;
 
 public class MainActivity extends AppCompatActivity {
-    private StyleImageView image;
-    private ListView list;
+    private ListView listView;
     private List<Integer> options;
     private List<String> optionTexts;
-    private View lastActiveView;
-    private CheckBox shouldAnimateCheckBox;
+
+    private StyleImageView image;
+    private View lastChosenOptionView;
+    private CheckBox enableAnimationCheckBox;
     private EditText animationDurationEditText;
     private SeekBar brightnessBar;
     private SeekBar contrastBar;
+    private SeekBar saturationBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +40,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         image = (StyleImageView) findViewById(R.id.image);
-        list = (ListView) findViewById(R.id.list);
+        listView = (ListView) findViewById(R.id.list);
         initOptions();
-        list.setAdapter(new ListAdapter());
+        listView.setAdapter(new ListAdapter());
 
-        shouldAnimateCheckBox = (CheckBox) findViewById(R.id.animation_checkbox);
+        enableAnimationCheckBox = (CheckBox) findViewById(R.id.animation_checkbox);
         animationDurationEditText = (EditText) findViewById(R.id.duration_edittext);
-        shouldAnimateCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        enableAnimationCheckBox.setChecked(image.isAnimationEnabled());
+        animationDurationEditText.setText(String.valueOf(image.getAnimationDuration()));
+        if (image.isAnimationEnabled()) {
+            animationDurationEditText.setEnabled(true);
+            animationDurationEditText.setTextColor(Color.BLACK);
+        } else {
+            animationDurationEditText.setEnabled(false);
+            animationDurationEditText.setTextColor(Color.GRAY);
+        }
+        enableAnimationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (!b) {
@@ -57,9 +67,9 @@ public class MainActivity extends AppCompatActivity {
                     animationDurationEditText.setTextColor(Color.BLACK);
                 }
                 if (b) {
-                    image.turnOnAnimate(Long.parseLong(animationDurationEditText.getText().toString()));
+                    image.enableAnimation(Long.parseLong(animationDurationEditText.getText().toString()));
                 } else {
-                    image.turnOffAnimate();
+                    image.disableAnimation();
                 }
             }
         });
@@ -70,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
-                    image.turnOnAnimate(Long.parseLong(charSequence.toString()));
+                    image.enableAnimation(Long.parseLong(charSequence.toString()));
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                 }
@@ -82,10 +92,12 @@ public class MainActivity extends AppCompatActivity {
 
         brightnessBar = (SeekBar) findViewById(R.id.seekbar_brightness);
         contrastBar = (SeekBar) findViewById(R.id.seekbar_contrast);
+        brightnessBar.setProgress(image.getBrightness() + 255);
+        contrastBar.setProgress((int) (image.getContrast() * 100));
         brightnessBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                image.setBrightness(brightnessBar.getProgress() - 255).updateStyle();
+                image.setBrightness(i - 255).updateStyle();
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -95,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         contrastBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                image.setContrast(contrastBar.getProgress() / 100F).updateStyle();
+                image.setContrast(i / 100F).updateStyle();
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -116,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         options.add(Styler.Mode.SEPIA);
         optionTexts.add("Sepia");
         options.add(Styler.Mode.BLACK_AND_WHITE);
-        optionTexts.add("Black&White");
+        optionTexts.add("Black & White");
         options.add(Styler.Mode.BRIGHT);
         optionTexts.add("Bright");
         options.add(Styler.Mode.VINTAGE_PINHOLE);
@@ -150,50 +162,59 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(final int i, View view, ViewGroup viewGroup) {
-            View result = getLayoutInflater().inflate(R.layout.option_item, null);
+            final View result = getLayoutInflater().inflate(R.layout.option_item, null);
+            if (i < options.size() && image.getMode() == options.get(i) ||
+                    i >= options.size() && image.getMode() == Styler.Mode.NONE) {
+                result.setBackgroundColor(Color.LTGRAY);
+                lastChosenOptionView = result;
+            }
             TextView title = (TextView) result.findViewById(R.id.text);
-            final SeekBar saturationBar = (SeekBar) result.findViewById(R.id.seekbar_saturation);
-            saturationBar.setVisibility(View.GONE);
             if (i >= options.size()) {
                 title.setText("Clear");
             } else {
                 title.setText(optionTexts.get(i));
                 if (options.get(i) == Styler.Mode.SATURATION) {
+                    saturationBar = (SeekBar) result.findViewById(R.id.seekbar_saturation);
                     saturationBar.setVisibility(View.VISIBLE);
-                    SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
+                    saturationBar.setProgress((int) (image.getSaturation() * 100));
+                    saturationBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                            image.setSaturation(saturationBar.getProgress() / 100F).updateStyle();
+                            image.setSaturation(i / 100F).updateStyle();
+                            if (lastChosenOptionView != result) {
+                                if (lastChosenOptionView != null) {
+                                    lastChosenOptionView.setBackgroundColor(Color.WHITE);
+                                }
+                                result.setBackgroundColor(Color.LTGRAY);
+                                lastChosenOptionView = result;
+                            }
                         }
                         @Override
                         public void onStartTrackingTouch(SeekBar seekBar) {}
                         @Override
                         public void onStopTrackingTouch(SeekBar seekBar) {}
-                    };
-                    saturationBar.setOnSeekBarChangeListener(listener);
+                    });
                 }
             }
             result.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (lastActiveView != null) {
-                        lastActiveView.setBackgroundColor(Color.WHITE);
+                    if (lastChosenOptionView != null) {
+                        lastChosenOptionView.setBackgroundColor(Color.WHITE);
                     }
                     view.setBackgroundColor(Color.LTGRAY);
                     if (i >= options.size()) {
                         image.clearStyle();
-                    } else if (options.get(i) != Styler.Mode.SATURATION) {
-                        if (i >= options.size()) {
-                            image.clearStyle();
-                        } else {
-                            image.setMode(options.get(i)).updateStyle();
+                    } else {
+                        image.setMode(options.get(i)).updateStyle();
+                        if (saturationBar != null && options.get(i) != Styler.Mode.SATURATION) {
+                            saturationBar.setProgress(100);
                         }
                     }
-                    lastActiveView = view;
+                    lastChosenOptionView = view;
                 }
             });
             return result;
         }
     }
 }
-

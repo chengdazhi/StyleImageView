@@ -3,15 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:style="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context="com.example.styleimageview.MainActivity">
 
     <it.chengdazhi.styleimageview.StyleImageView
         android:id="@+id/image"
-        app:style="black_and_white"
-        app:brightness="60"
-        app:contrast="1.2"
+        style:style="black_and_white"
+        style:brightness="60"
+        style:contrast="1.2"
+        style:animate="true"
+        style:animation_duration="1000"
         android:src="@drawable/scene"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

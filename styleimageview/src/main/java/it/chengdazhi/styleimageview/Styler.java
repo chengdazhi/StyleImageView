@@ -3,10 +3,14 @@ package it.chengdazhi.styleimageview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 /**
@@ -14,6 +18,7 @@ import android.widget.ImageView;
  */
 public class Styler {
     private boolean enableAnimation;
+    private Interpolator interpolator;
     private long animationDuration;
     private int brightness;
     private float contrast;
@@ -25,13 +30,14 @@ public class Styler {
 
     private Styler(Builder builder) {
         super();
-        enableAnimation = builder.animate;
+        enableAnimation = builder.enableAnimation;
         animationDuration = builder.animationDuration;
         brightness = builder.brightness;
         contrast = builder.contrast;
         saturation = builder.saturation;
         mode = builder.mode;
         drawableHolder = builder.drawableHolder;
+        interpolator = builder.interpolator;
     }
 
     public void updateStyle() {
@@ -71,7 +77,7 @@ public class Styler {
         }
     }
 
-    private void animateMatrix(final float[] startMatrix, final float[] endMatrix, AnimatorListenerAdapter listenerAdapter) {
+    private void animateMatrix(final float[] startMatrix, final float[] endMatrix, AnimatorListenerAdapter onAnimationEndListener) {
         if (animator != null) {
             animator.cancel();
         }
@@ -81,18 +87,19 @@ public class Styler {
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float[] result = new float[20];
                 float fraction = valueAnimator.getAnimatedFraction();
+                float ratio = interpolator.getInterpolation(fraction);
                 for (int i = 0; i < 20; i++) {
-                    result[i] = (startMatrix[i] * (1 - fraction)) + (endMatrix[i] * fraction);
+                    result[i] = (startMatrix[i] * (1 - ratio)) + (endMatrix[i] * ratio);
                 }
                 setDrawableStyleByMatrix(result);
                 oldMatrix = result.clone();
             }
         });
-        animator.addListener(listenerAdapter);
+        animator.addListener(onAnimationEndListener);
         animator.start();
     }
 
-    public void setDrawableStyleByMatrix( float[] matrix) {
+    public void setDrawableStyleByMatrix(float[] matrix) {
         if (drawableHolder.getDrawable() == null) {
             return;
         }
@@ -178,7 +185,7 @@ public class Styler {
         return result;
     }
 
-    public boolean isEnableAnimation() {
+    public boolean isAnimationEnabled() {
         return enableAnimation;
     }
 
@@ -186,13 +193,19 @@ public class Styler {
         return animationDuration;
     }
 
-    public Styler turnOnAnimate(long animationDuration) {
-        enableAnimation = true;
-        this.animationDuration = animationDuration;
+    public Styler enableAnimation(long animationDuration) {
+        enableAnimation(animationDuration, new LinearInterpolator());
         return this;
     }
 
-    public Styler turnOffAnimate() {
+    public Styler enableAnimation(long animationDuration, Interpolator interpolator) {
+        enableAnimation = true;
+        this.animationDuration = animationDuration;
+        this.interpolator = interpolator;
+        return this;
+    }
+
+    public Styler disableAnimation() {
         enableAnimation = false;
         animationDuration = 0;
         return this;
@@ -242,6 +255,20 @@ public class Styler {
         return drawableHolder.getDrawable();
     }
 
+    public Bitmap getBitmap() {
+        Drawable drawable = drawableHolder.getDrawable();
+        return getBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+    }
+
+    public Bitmap getBitmap(int width, int height) {
+        Drawable drawable = drawableHolder.getDrawable();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
     public static class DrawableHolder {
         private View view;
         private Drawable drawable;
@@ -271,14 +298,14 @@ public class Styler {
     }
 
     public static class Builder {
-        private boolean animate = false;
+        private boolean enableAnimation = false;
+        private Interpolator interpolator;
         private long animationDuration = 0;
         private int brightness = 0;
         private float contrast = 1;
         private float saturation = 1;
         private int mode = Mode.NONE;
         private DrawableHolder drawableHolder;
-        private boolean fromView;
 
         public Styler build() {
             return new Styler(this);
@@ -297,15 +324,22 @@ public class Styler {
             drawableHolder = new DrawableHolder(drawable);
         }
 
-        public Builder turnOnAnimate(long animationDuration) {
-            animate = true;
-            this.animationDuration = animationDuration;
+        public Builder enableAnimation(long animationDuration) {
+            enableAnimation(animationDuration, new LinearInterpolator());
             return this;
         }
 
-        public Builder turnOffAnimate() {
-            animate = false;
+        public Builder enableAnimation(long animationDuration, Interpolator interpolator) {
+            enableAnimation = true;
+            this.animationDuration = animationDuration;
+            this.interpolator = interpolator;
+            return this;
+        }
+
+        public Builder disableAnimation() {
+            enableAnimation = false;
             animationDuration = 0;
+            interpolator = null;
             return this;
         }
 
@@ -327,7 +361,7 @@ public class Styler {
             return this;
         }
 
-        //this clears the original style
+        //this method clears the original style
         public Builder setSaturation(float saturation) {
             mode = Mode.SATURATION;
             this.saturation = saturation;

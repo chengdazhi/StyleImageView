@@ -9,8 +9,8 @@
             <enum name="invert" value="2"/>
             <enum name="rgb_to_bgr" value="3"/>
             <enum name="sepia" value="4"/>
-            <enum name="bright" value="5"/>
-            <enum name="black_and_white" value="6"/>
+            <enum name="black_and_white" value="5"/>
+            <enum name="bright" value="6"/>
             <enum name="vintage_pinhole" value="7"/>
             <enum name="kodachrome" value="8"/>
             <enum name="technicolor" value="9"/>
@@ -18,6 +18,8 @@
         <attr name="brightness" format="integer"/>
         <attr name="contrast" format="float"/>
         <attr name="saturation" format="float"/>
+        <attr name="animate" format="boolean"/>
+        <attr name="animation_duration" format="integer"/>
     </declare-styleable>
 
 </resources>
