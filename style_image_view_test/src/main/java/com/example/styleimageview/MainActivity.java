@@ -205,6 +205,9 @@ public class MainActivity extends AppCompatActivity {
                     view.setBackgroundColor(Color.LTGRAY);
                     if (i >= options.size()) {
                         image.clearStyle();
+                        if (saturationBar != null) {
+                            saturationBar.setProgress(100);
+                        }
                     } else {
                         image.setMode(options.get(i)).updateStyle();
                         if (saturationBar != null && options.get(i) != Styler.Mode.SATURATION) {

@@ -88,7 +88,9 @@ public class MainActivity extends AppCompatActivity {
         brightnessBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                styler.setBrightness(brightnessBar.getProgress() - 255).updateStyle();
+                if (b) {
+                    styler.setBrightness(i - 255).updateStyle();
+                }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -98,7 +100,9 @@ public class MainActivity extends AppCompatActivity {
         contrastBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                styler.setContrast(contrastBar.getProgress() / 100F).updateStyle();
+                if (b) {
+                    styler.setContrast(i / 100F).updateStyle();
+                }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -171,14 +175,16 @@ public class MainActivity extends AppCompatActivity {
                     saturationBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                            styler.setSaturation(i / 100F).updateStyle();
-                            if (lastActiveView != result) {
-                                result.setBackgroundColor(Color.LTGRAY);
-                                if (lastActiveView != null) {
-                                    lastActiveView.setBackgroundColor(Color.WHITE);
+                            if (b) {
+                                styler.setSaturation(i / 100F).updateStyle();
+                                if (lastActiveView != result) {
+                                    result.setBackgroundColor(Color.LTGRAY);
+                                    if (lastActiveView != null) {
+                                        lastActiveView.setBackgroundColor(Color.WHITE);
+                                    }
+                                    lastActiveView = result;
                                 }
                             }
-                            lastActiveView = result;
                         }
                         @Override
                         public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -196,9 +202,12 @@ public class MainActivity extends AppCompatActivity {
                     view.setBackgroundColor(Color.LTGRAY);
                     if (i >= options.size()) {
                         styler.clearStyle();
+                        if (saturationBar != null) {
+                            saturationBar.setProgress(100);
+                        }
                     } else {
                         styler.setMode(options.get(i)).updateStyle();
-                        if (saturationBar != null) {
+                        if (saturationBar != null && options.get(i) != Styler.Mode.SATURATION) {
                             saturationBar.setProgress(100);
                         }
                     }
