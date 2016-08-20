@@ -47,11 +47,11 @@ public class StyleImageView extends ImageView {
                 styler.setSaturation(saturation);
             }
         }
-        boolean animate = typedArray.getBoolean(R.styleable.StyleImageView_animate, false);
+        boolean enableAnimation = typedArray.getBoolean(R.styleable.StyleImageView_enable_animation, false);
         long animationDuration = typedArray.getInt(R.styleable.StyleImageView_animation_duration, 0);
-        if (!animate && animationDuration != 0) {
+        if (!enableAnimation && animationDuration != 0) {
             throw new IllegalStateException("Animate can't be false when animation_duration is set");
-        } else if (animate) {
+        } else if (enableAnimation) {
             styler.enableAnimation(animationDuration);
         }
         typedArray.recycle();

@@ -18,7 +18,7 @@
         <attr name="brightness" format="integer"/>
         <attr name="contrast" format="float"/>
         <attr name="saturation" format="float"/>
-        <attr name="animate" format="boolean"/>
+        <attr name="enable_animation" format="boolean"/>
         <attr name="animation_duration" format="integer"/>
     </declare-styleable>
 

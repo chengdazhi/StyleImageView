@@ -3,10 +3,12 @@ package it.chengdazhi.styleimageview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.animation.Interpolator;
@@ -44,7 +46,7 @@ public class Styler {
         if (drawableHolder.getDrawable() == null) {
             return;
         }
-        final float[] matrix = calculateMatrix();
+        final float[] matrix = calculateMatrix(mode, brightness, contrast, saturation);
         if (enableAnimation) {
             animateMatrix(oldMatrix, matrix, new AnimatorListenerAdapter() {
                 @Override
@@ -99,7 +101,7 @@ public class Styler {
         animator.start();
     }
 
-    public void setDrawableStyleByMatrix(float[] matrix) {
+    private void setDrawableStyleByMatrix(float[] matrix) {
         if (drawableHolder.getDrawable() == null) {
             return;
         }
@@ -107,11 +109,11 @@ public class Styler {
         oldMatrix = matrix.clone();
     }
 
-    private float[] calculateMatrix() {
-        return applyBrightnessAndContrast(getMatrixByMode(mode, saturation));
+    private static float[] calculateMatrix(int mode, int brightness, float contrast, float saturation) {
+        return applyBrightnessAndContrast(getMatrixByMode(mode, saturation), brightness, contrast);
     }
 
-    public float[] applyBrightnessAndContrast(float[] matrix) {
+    private static float[] applyBrightnessAndContrast(float[] matrix, int brightness, float contrast) {
         float t = (1.0F - contrast) / 2.0F * 255.0F;
         for (int i = 0; i < 3; i++) {
             for (int j = i * 5; j < i * 5 + 3; j++) {
@@ -122,7 +124,7 @@ public class Styler {
         return matrix;
     }
 
-    public static float[] getMatrixByMode(int mode, float saturation) {
+    private static float[] getMatrixByMode(int mode, float saturation) {
         float[] targetMatrix;
         switch (mode) {
             case Mode.NONE:
@@ -164,8 +166,7 @@ public class Styler {
         return targetMatrix;
     }
 
-
-    public static float[] getSaturationMatrix(float saturation) {
+    private static float[] getSaturationMatrix(float saturation) {
         final float lumR = 0.3086F;
         final float lumG = 0.6094F;
         final float lumB = 0.0820F;
@@ -265,6 +266,20 @@ public class Styler {
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    //TODO should allow users to input less params
+    public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode, int brightness, float contrast, float saturation) {
+        if (saturation != 1 && (mode != Mode.SATURATION || mode != Mode.NONE)) {
+            throw new IllegalArgumentException("saturation must be 1.0 when mode is not Styler.Mode.SATURATION");
+        }
+        Canvas canvas = new Canvas(bitmap);
+        context = context.getApplicationContext();
+        BitmapDrawable drawable = new BitmapDrawable(context.getResources(), bitmap);
+        drawable.setColorFilter(new ColorMatrixColorFilter(calculateMatrix(mode, brightness, contrast, saturation)));
+        drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
         drawable.draw(canvas);
         return bitmap;
     }
