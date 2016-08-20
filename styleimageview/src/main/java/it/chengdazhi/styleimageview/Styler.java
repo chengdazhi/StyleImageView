@@ -27,7 +27,7 @@ public class Styler {
     private float saturation;
     private int mode;
     private DrawableHolder drawableHolder;
-    private float[] oldMatrix = StyleMatrixs.COMMON;
+    private float[] oldMatrix = StyleMatrixs.common();
     private ValueAnimator animator;
 
     private Styler(Builder builder) {
@@ -65,7 +65,7 @@ public class Styler {
             return;
         }
         if (enableAnimation) {
-            animateMatrix(oldMatrix, StyleMatrixs.COMMON, new AnimatorListenerAdapter() {
+            animateMatrix(oldMatrix, StyleMatrixs.common(), new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
@@ -128,34 +128,34 @@ public class Styler {
         float[] targetMatrix;
         switch (mode) {
             case Mode.NONE:
-                targetMatrix = StyleMatrixs.COMMON.clone();
+                targetMatrix = StyleMatrixs.common();
                 break;
             case Mode.GREY_SCALE:
-                targetMatrix = StyleMatrixs.GREY_SCALE.clone();
+                targetMatrix = StyleMatrixs.greyScale();
                 break;
             case Mode.INVERT:
-                targetMatrix = StyleMatrixs.INVERT.clone();
+                targetMatrix = StyleMatrixs.invert();
                 break;
             case Mode.RGB_TO_BGR:
-                targetMatrix = StyleMatrixs.RGB_TO_BGR.clone();
+                targetMatrix = StyleMatrixs.rgbToBgr();
                 break;
             case Mode.SEPIA:
-                targetMatrix = StyleMatrixs.SEPIA.clone();
+                targetMatrix = StyleMatrixs.sepia();
                 break;
             case Mode.BRIGHT:
-                targetMatrix = StyleMatrixs.BRIGHT.clone();
+                targetMatrix = StyleMatrixs.bright();
                 break;
             case Mode.BLACK_AND_WHITE:
-                targetMatrix = StyleMatrixs.BLACK_AND_WHITE.clone();
+                targetMatrix = StyleMatrixs.blackAndWhite();
                 break;
             case Mode.VINTAGE_PINHOLE:
-                targetMatrix = StyleMatrixs.VINTAGE_PINHOLE.clone();
+                targetMatrix = StyleMatrixs.vintagePinhole();
                 break;
             case Mode.KODACHROME:
-                targetMatrix = StyleMatrixs.KODACHROME.clone();
+                targetMatrix = StyleMatrixs.kodachrome();
                 break;
             case Mode.TECHNICOLOR:
-                targetMatrix = StyleMatrixs.TECHNICOLOR.clone();
+                targetMatrix = StyleMatrixs.technicolor();
                 break;
             case Mode.SATURATION:
                 targetMatrix = getSaturationMatrix(saturation);
@@ -173,7 +173,7 @@ public class Styler {
         float sr = (1 - saturation) * lumR;
         float sg = (1 - saturation) * lumG;
         float sb = (1 - saturation) * lumB;
-        float[] result = StyleMatrixs.COMMON.clone();
+        float[] result = StyleMatrixs.common();
         result[0] = sr + saturation;
         result[1] = sg;
         result[2] = sb;
