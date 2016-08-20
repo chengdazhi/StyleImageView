@@ -270,18 +270,22 @@ public class Styler {
         return bitmap;
     }
 
-    //TODO should allow users to input less params
+    public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode) {
+        return addStyleToBitmap(context, bitmap, mode, 0, 1, 1);
+    }
+
     public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode, int brightness, float contrast, float saturation) {
         if (saturation != 1 && (mode != Mode.SATURATION || mode != Mode.NONE)) {
             throw new IllegalArgumentException("saturation must be 1.0 when mode is not Styler.Mode.SATURATION");
         }
-        Canvas canvas = new Canvas(bitmap);
+        Bitmap newBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(newBitmap);
         context = context.getApplicationContext();
         BitmapDrawable drawable = new BitmapDrawable(context.getResources(), bitmap);
         drawable.setColorFilter(new ColorMatrixColorFilter(calculateMatrix(mode, brightness, contrast, saturation)));
         drawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
         drawable.draw(canvas);
-        return bitmap;
+        return newBitmap;
     }
 
     public static class DrawableHolder {

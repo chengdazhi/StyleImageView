@@ -12,7 +12,7 @@
         style:style="black_and_white"
         style:brightness="60"
         style:contrast="1.2"
-        style:animate="true"
+        style:enable_animation="true"
         style:animation_duration="1000"
         android:src="@drawable/scene"
         android:layout_width="wrap_content"
