@@ -6,11 +6,24 @@
     android:orientation="vertical"
     tools:context="com.example.styleimageview.MainActivity">
 
-    <ImageView
-        android:id="@+id/image"
-        android:src="@drawable/scene"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="180dp">
+
+        <ImageView
+            android:src="@drawable/test_house"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/image"
+            android:src="@drawable/test_house"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

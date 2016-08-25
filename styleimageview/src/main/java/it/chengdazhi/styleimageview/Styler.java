@@ -17,6 +17,9 @@ import android.widget.ImageView;
 
 /**
  * Created by chengdazhi on 8/10/16.
+ *
+ * This class can add style to ImageView's Drawable, View's background and any given drawable,
+ * using ColorMatrixColorFilter.
  */
 public class Styler {
     private boolean enableAnimation;
@@ -26,12 +29,12 @@ public class Styler {
     private float contrast;
     private float saturation;
     private int mode;
+    private AnimationListener listener;
     private DrawableHolder drawableHolder;
     private float[] oldMatrix = StyleMatrixs.common();
     private ValueAnimator animator;
 
     private Styler(Builder builder) {
-        super();
         enableAnimation = builder.enableAnimation;
         animationDuration = builder.animationDuration;
         brightness = builder.brightness;
@@ -42,6 +45,10 @@ public class Styler {
         interpolator = builder.interpolator;
     }
 
+    /**
+     * This method updates UI.
+     * Simply setting params like mode and brightness won't bringing effect until this method is called.
+     */
     public void updateStyle() {
         if (drawableHolder.getDrawable() == null) {
             return;
@@ -60,6 +67,12 @@ public class Styler {
         }
     }
 
+    /**
+     * This method clears the style added.
+     * This will set the mode to Styler.Mode.NONE and saturation to 1(default value).
+     * But this does not clear the brightness and contrast, if these two params are set.
+     * Note if animation is enabled, this method will also have animation effect.
+     */
     public void clearStyle() {
         if (drawableHolder.getDrawable() == null) {
             return;
@@ -71,11 +84,13 @@ public class Styler {
                     super.onAnimationEnd(animation);
                     drawableHolder.getDrawable().clearColorFilter();
                     mode = Mode.NONE;
+                    saturation = 1;
                 }
             });
         } else {
             drawableHolder.getDrawable().clearColorFilter();
             mode = Mode.NONE;
+            saturation = 1;
         }
     }
 
@@ -89,15 +104,35 @@ public class Styler {
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float[] result = new float[20];
                 float fraction = valueAnimator.getAnimatedFraction();
-                float ratio = interpolator.getInterpolation(fraction);
+                float progress = interpolator.getInterpolation(fraction);
                 for (int i = 0; i < 20; i++) {
-                    result[i] = (startMatrix[i] * (1 - ratio)) + (endMatrix[i] * ratio);
+                    result[i] = (startMatrix[i] * (1 - progress)) + (endMatrix[i] * progress);
                 }
                 setDrawableStyleByMatrix(result);
                 oldMatrix = result.clone();
+                if (listener != null) {
+                    listener.onAnimationUpdate(fraction, progress);
+                }
             }
         });
         animator.addListener(onAnimationEndListener);
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                if (listener != null) {
+                    listener.onAnimationStart();
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (listener != null) {
+                    listener.onAnimationEnd();
+                }
+            }
+        });
         animator.start();
     }
 
@@ -125,7 +160,7 @@ public class Styler {
     }
 
     private static float[] getMatrixByMode(int mode, float saturation) {
-        float[] targetMatrix;
+        float[] targetMatrix = StyleMatrixs.common();
         switch (mode) {
             case Mode.NONE:
                 targetMatrix = StyleMatrixs.common();
@@ -160,8 +195,6 @@ public class Styler {
             case Mode.SATURATION:
                 targetMatrix = getSaturationMatrix(saturation);
                 break;
-            default:
-                throw new IllegalArgumentException("mode not supported!");
         }
         return targetMatrix;
     }
@@ -194,6 +227,14 @@ public class Styler {
         return animationDuration;
     }
 
+    /**
+     * This method turns on animation.
+     * If you want to change animation duration, you need to call this method.
+     * If you want to specify a interpolator
+     * you can call enableAnimation(long animationDuration, Interpolator interpolator)
+     * @param animationDuration
+     * @return
+     */
     public Styler enableAnimation(long animationDuration) {
         enableAnimation(animationDuration, new LinearInterpolator());
         return this;
@@ -206,6 +247,10 @@ public class Styler {
         return this;
     }
 
+    /**
+     * this method turn off animation and reset animation duration to 0
+     * @return
+     */
     public Styler disableAnimation() {
         enableAnimation = false;
         animationDuration = 0;
@@ -217,6 +262,11 @@ public class Styler {
     }
 
     public Styler setBrightness(int brightness) {
+        if (brightness > 255) {
+            throw new IllegalArgumentException("brightness can't be bigger than 255");
+        } else if (brightness < -255) {
+            throw new IllegalArgumentException("brightness can't be smaller than -255");
+        }
         this.brightness = brightness;
         return this;
     }
@@ -226,6 +276,9 @@ public class Styler {
     }
 
     public Styler setContrast(float contrast) {
+        if (contrast < 0) {
+            throw new IllegalArgumentException("contrast can't be smaller than 0");
+        }
         this.contrast = contrast;
         return this;
     }
@@ -235,16 +288,33 @@ public class Styler {
     }
 
     public Styler setSaturation(float saturation) {
+        if (saturation < 0) {
+            throw new IllegalArgumentException("saturation can't be smaller than 0");
+        }
         mode = Mode.SATURATION;
         this.saturation = saturation;
         return this;
     }
 
+    /**
+     * @return current mode
+     */
     public int getMode() {
         return mode;
     }
 
+    /**
+     * Sets styler's mode to given mode
+     * Note if mode is not Styler.Mode.SATURATION, and saturation is set before, saturation will be reset to 1(default value)
+     * If mode is Styler.Mode.SATURATION, you must call setSaturation and specify a saturation value.
+     * Because by default saturation is 1 and doesn't cause any changes of UI.
+     * @param mode
+     * @return Styler object
+     */
     public Styler setMode(int mode) {
+        if (!Mode.hasMode(mode)) {
+            throw new IllegalArgumentException("Mode " + mode + " not supported! Check Styler.Mode class for supported modes");
+        }
         this.mode = mode;
         if (mode != Mode.SATURATION) {
             saturation = 1;
@@ -256,9 +326,39 @@ public class Styler {
         return drawableHolder.getDrawable();
     }
 
+    /**
+     * AnimationListener's methods will be called only when animation is enabled.
+     * @param listener custom Styler.AnimationListener
+     * @return
+     */
+    public Styler setAnimationListener(AnimationListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    /**
+     * @return returns the removed AnimationListener
+     */
+    public AnimationListener removeAnimationListener() {
+        AnimationListener removedListener = listener;
+        listener = null;
+        return removedListener;
+    }
+
+    /**
+     * The bitmap's size is based on the view or drawable you passed in.
+     * If you want to specify width and height, use Styler.getBitmap(int width, int height)
+     * @return the bitmap with style added
+     */
     public Bitmap getBitmap() {
         Drawable drawable = drawableHolder.getDrawable();
-        return getBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        int width = drawable.getIntrinsicWidth();
+        int height = drawable.getIntrinsicHeight();
+        if ((width == 0 || height == 0) && drawableHolder.isView && drawableHolder.view != null) {
+            width = drawableHolder.view.getMeasuredWidth();
+            height = drawableHolder.view.getMeasuredHeight();
+        }
+        return getBitmap(width, height);
     }
 
     public Bitmap getBitmap(int width, int height) {
@@ -270,13 +370,45 @@ public class Styler {
         return bitmap;
     }
 
+    /**
+     * Method to add style to bitmap
+     * This method can only specify the mode, but not saturation
+     * If you want to use saturation mode or specify brightness or contrast,
+     * call addStyleToBitmap(Context context, Bitmap bitmap, int mode, int brightness, float contrast, float saturation)
+     * @param context
+     * @param bitmap Bitmap object to change, we don't operate on this bitmap because it's immutable, you should use the returned bitmap object
+     * @param mode
+     * @return
+     */
     public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode) {
         return addStyleToBitmap(context, bitmap, mode, 0, 1, 1);
     }
 
+    /**
+     * Method to add style to bitmap
+     *
+     * @param context
+     * @param bitmap Bitmap object to change, we don't operate on this bitmap because it's immutable, you should use the returned bitmap object
+     * @param mode
+     * @param brightness if you don't want to change brightness, pass 0
+     * @param contrast if you don't want to change contrast, pass 1
+     * @param saturation if you don't want to change saturation, pass 1. If saturation is set, then the mode must be Styler.Mode.SATURATION
+     * @return
+     */
     public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode, int brightness, float contrast, float saturation) {
         if (saturation != 1 && (mode != Mode.SATURATION || mode != Mode.NONE)) {
             throw new IllegalArgumentException("saturation must be 1.0 when mode is not Styler.Mode.SATURATION");
+        }
+        if (brightness > 255) {
+            throw new IllegalArgumentException("brightness can't be bigger than 255");
+        } else if (brightness < -255) {
+            throw new IllegalArgumentException("brightness can't be smaller than -255");
+        }
+        if (contrast < 0) {
+            throw new IllegalArgumentException("contrast can't be smaller than 0");
+        }
+        if (saturation < 0) {
+            throw new IllegalArgumentException("saturation can't be smaller than 0");
         }
         Bitmap newBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(newBitmap);
@@ -288,7 +420,7 @@ public class Styler {
         return newBitmap;
     }
 
-    public static class DrawableHolder {
+    private static class DrawableHolder {
         private View view;
         private Drawable drawable;
         private boolean isView;
@@ -325,6 +457,7 @@ public class Styler {
         private float saturation = 1;
         private int mode = Mode.NONE;
         private DrawableHolder drawableHolder;
+        private AnimationListener listener;
 
         public Styler build() {
             return new Styler(this);
@@ -359,6 +492,7 @@ public class Styler {
             enableAnimation = false;
             animationDuration = 0;
             interpolator = null;
+            listener = null;
             return this;
         }
 
@@ -380,10 +514,27 @@ public class Styler {
             return this;
         }
 
-        //this method clears the original style
+        /**
+         * This method set mode to Styler.Mode.SATURATION
+         * @param saturation
+         * @return
+         */
         public Builder setSaturation(float saturation) {
+            if (saturation < 0) {
+                throw new IllegalArgumentException("saturation can't be smaller than 0");
+            }
             mode = Mode.SATURATION;
             this.saturation = saturation;
+            return this;
+        }
+
+        /**
+         * AnimationListener's methods will be called only when animation is enabled.
+         * @param listener custom Styler.AnimationListener
+         * @return
+         */
+        public Builder setAnimationListener(AnimationListener listener) {
+            this.listener = listener;
             return this;
         }
     }
@@ -400,6 +551,36 @@ public class Styler {
         public static final int VINTAGE_PINHOLE = 7;
         public static final int KODACHROME = 8;
         public static final int TECHNICOLOR = 9;
+
+        static boolean hasMode(int mode) {
+            switch (mode) {
+                case Mode.NONE:
+                case Mode.GREY_SCALE:
+                case Mode.INVERT:
+                case Mode.RGB_TO_BGR:
+                case Mode.SEPIA:
+                case Mode.BRIGHT:
+                case Mode.BLACK_AND_WHITE:
+                case Mode.VINTAGE_PINHOLE:
+                case Mode.KODACHROME:
+                case Mode.TECHNICOLOR:
+                case Mode.SATURATION:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
+    public interface AnimationListener {
+        void onAnimationStart();
+        /**
+         * Two params are same if Interpolator is not set or is LinearInterpolator.
+         * Otherwise progress is the value calculated by Interpolator with timeFraction.
+         * @param timeFraction the time fraction of the whole animation
+         * @param progress the progress of the whole animation, range[0-1]
+         */
+        void onAnimationUpdate(float timeFraction, float progress);
+        void onAnimationEnd();
+    }
 }
