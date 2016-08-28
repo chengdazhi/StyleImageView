@@ -170,6 +170,10 @@ public class StyleImageView extends ImageView {
         return this;
     }
 
+    public Styler.AnimationListener getAnimationListener() {
+        return styler.getAnimationListener();
+    }
+
     /**
      * AnimationListener's methods will be called only when animation is enabled.
      * @param listener custom Styler.AnimationListener

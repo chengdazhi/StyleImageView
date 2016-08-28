@@ -326,6 +326,10 @@ public class Styler {
         return drawableHolder.getDrawable();
     }
 
+    public AnimationListener getAnimationListener() {
+        return this.listener;
+    }
+
     /**
      * AnimationListener's methods will be called only when animation is enabled.
      * @param listener custom Styler.AnimationListener
@@ -362,7 +366,7 @@ public class Styler {
     }
 
     public Bitmap getBitmap(int width, int height) {
-        Drawable drawable = drawableHolder.getDrawable();
+        Drawable drawable = drawableHolder.getDrawable().mutate().getConstantState().newDrawable();
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, width, height);

@@ -27,7 +27,7 @@ dependencies {
 }
 
 group = 'it.chengdazhi.styleimageview'
-version = '1.0.1'
+version = '1.0.3'
 
 task generateSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
@@ -62,10 +62,10 @@ bintray {
         name = 'it.chengdazhi.styleimageview'
 
         version {
-            name = '1.0.1-tuts'
+            name = '1.0.3-tuts'
             desc = "style image view"
             released = new Date()
-            vcsTag = '1.0.1'
+            vcsTag = '1.0.3'
         }
 
         licenses = ['Apache-2.0']
