@@ -4,6 +4,8 @@
 
 ![gif_sample](./images/style_sample.gif)
 
+[中文见这里](https://github.com/chengdazhi/StyleImageView/wiki/%E4%B8%AD%E6%96%87%E8%AF%B4%E6%98%8E%E9%A1%B5)
+
 This library can set the style of ImageView/View background/Drawable/Bitmap and also brightness & contrast. This library now supports 10 different styles, you can check them out below. You can enable animation, and choose to set Interpolators and Listeners. You can acquire the Bitmap of ImageView/View/Drawable after style is set.
 
 If you only need to operate ImageViews, you can use the StyleImageView class. You can specify attributes from layout file. If you are already using custom ImageViews, or you want to operate on View's background, or any Drawable or Bitmap, you can use the Styler class.
