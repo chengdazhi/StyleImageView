@@ -48,7 +48,18 @@ Some combinations I recommend:
 
 Gradle
 
+    dependencies {
+        compile 'it.chengdazhi.styleimageview:styleimageview:1.0.3'
+    }
+
 Maven
+
+    <dependency>
+        <groupId>it.chengdazhi.styleimageview</groupId>
+        <artifactId>styleimageview</artifactId>
+        <version>1.0.3</version>
+        <type>pom</type>
+    </dependency>
 
 ## Usage
 
