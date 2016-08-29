@@ -468,15 +468,18 @@ public class Styler {
         }
 
         public Builder(View view, int mode) {
+            if (view == null) {
+                throw new NullPointerException("view can not be null");
+            }
             this.mode = mode;
             drawableHolder = new DrawableHolder(view);
         }
 
         public Builder(Drawable drawable, int mode) {
-            this.mode = mode;
             if (drawable == null) {
-                throw new IllegalArgumentException("drawable can't be null");
+                throw new NullPointerException("drawable can not be null");
             }
+            this.mode = mode;
             drawableHolder = new DrawableHolder(drawable);
         }
 
