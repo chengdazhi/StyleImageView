@@ -49,7 +49,7 @@ Some combinations I recommend:
 Gradle
 
     dependencies {
-        compile 'it.chengdazhi.styleimageview:styleimageview:1.0.3'
+        compile 'it.chengdazhi.styleimageview:styleimageview:1.0.4'
     }
 
 Maven
@@ -57,7 +57,7 @@ Maven
     <dependency>
         <groupId>it.chengdazhi.styleimageview</groupId>
         <artifactId>styleimageview</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
         <type>pom</type>
     </dependency>
 
