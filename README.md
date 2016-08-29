@@ -1,5 +1,7 @@
 # StyleImageView
 
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-StyleImageView-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/4246)
+
 ## Introduction
 
 ![gif_sample](./images/style_sample.gif)
