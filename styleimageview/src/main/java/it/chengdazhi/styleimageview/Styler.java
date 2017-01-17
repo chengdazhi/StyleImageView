@@ -400,7 +400,7 @@ public class Styler {
      * @return
      */
     public static Bitmap addStyleToBitmap(Context context, Bitmap bitmap, int mode, int brightness, float contrast, float saturation) {
-        if (saturation != 1 && (mode != Mode.SATURATION || mode != Mode.NONE)) {
+        if (saturation != 1 && mode != Mode.SATURATION && mode != Mode.NONE) {
             throw new IllegalArgumentException("saturation must be 1.0 when mode is not Styler.Mode.SATURATION");
         }
         if (brightness > 255) {
